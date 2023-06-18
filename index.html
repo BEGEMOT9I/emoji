@@ -19,13 +19,21 @@
 
     body {
       margin: 0;
+      overflow: hidden;
     }
 
     .container {
       position: relative;
       display: inline-block;
       user-select: none;
-      filter: drop-shadow(rgba(0, 0, 0, 0.45) 0px 0px 2px)
+      filter: drop-shadow(rgba(0, 0, 0, 0.45) 0px 0px 2px);
+      max-width: 100%;
+
+    }
+
+    .container svg,
+    .container img {
+      max-width: 100%;
     }
   </style>
   <div id="emoji-container" class="container">
@@ -84,7 +92,7 @@
 
   <div id="platformeco-planets-container" class="container">
     <svg width="0" height="0">
-      <filter id="platformecoPlanets" color-interpolation-filters="sRGB">
+      <filter id="platformecoPlanets" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
         <feGaussianBlur in="SourceAlpha" result="blur1" stdDeviation="3"></feGaussianBlur>
         <feSpecularLighting result="spec1" in="blur1" surfaceScale="5" specularConstant="0.5" lighting-color="#ffffff"
           specularExponent="120">
@@ -124,14 +132,23 @@
       const element = container.children[1];
       const light = container.querySelector('[data-name="light"]');
 
-      document.addEventListener('mousemove', (event) => {
+      function handler(event) {
         const { top, left } = element.getBoundingClientRect();
-        const x = Math.round(event.clientX - left);
-        const y = Math.round(event.clientY - top);
 
-        light.setAttribute('x', x);
-        light.setAttribute('y', y);
-      })
+        if (navigator.userAgent.includes('Safari')) {
+          light.setAttribute('x', event.clientX ^ 0);
+          light.setAttribute('y', event.clientY ^ 0);
+        } else {
+          const x = Math.round(event.clientX - left);
+          const y = Math.round(event.clientY - top);
+
+          light.setAttribute('x', x);
+          light.setAttribute('y', y);
+        }
+      }
+
+      document.addEventListener('mousemove', handler);
+      document.addEventListener('pointermove', handler);
     }
 
     bindAnimation(window['emoji-container']);
