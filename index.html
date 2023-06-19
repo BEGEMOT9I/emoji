@@ -131,13 +131,30 @@
     function bindAnimation(container) {
       const element = container.children[1];
       const light = container.querySelector('[data-name="light"]');
+      const isTouchable = (('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0))
+      const eventType = isTouchable ? 'pointermove' : 'mousemove';
+
+      function handleIntersect(entries) {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            document.addEventListener(eventType, handler);
+          } else {
+            document.removeEventListener(eventType, handler);
+          }
+        });
+      }
+
+      const observer = new IntersectionObserver(handleIntersect);
+      observer.observe(element);
 
       function handler(event) {
         const { top, left } = element.getBoundingClientRect();
 
-        if (navigator.userAgent.includes('Safari')) {
-          light.setAttribute('x', event.clientX ^ 0);
-          light.setAttribute('y', event.clientY ^ 0);
+        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+          light.setAttribute('x', event.pageX ^ 0);
+          light.setAttribute('y', event.pageY ^ 0);
         } else {
           const x = Math.round(event.clientX - left);
           const y = Math.round(event.clientY - top);
@@ -146,10 +163,8 @@
           light.setAttribute('y', y);
         }
       }
-
-      document.addEventListener('mousemove', handler);
-      document.addEventListener('pointermove', handler);
     }
+
 
     bindAnimation(window['emoji-container']);
     bindAnimation(window['image-container']);
